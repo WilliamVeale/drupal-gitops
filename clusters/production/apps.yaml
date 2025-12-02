@@ -19,8 +19,6 @@ spec:
     - name: drupal-migration
   decryption:
     provider: sops
-    secretRef:
-      name: sops-azure
   healthChecks:
     - apiVersion: apps/v1
       kind: Deployment

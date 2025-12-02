@@ -18,8 +18,6 @@ spec:
     - name: certificates
   decryption:
     provider: sops
-    secretRef:
-      name: sops-azure
   # Only apply the migration job from this kustomization
   patches:
     - patch: |
