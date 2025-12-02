@@ -1,3 +1,4 @@
 creation_rules:
   - path_regex: .*secrets\.yaml$
+    encrypted_regex: ^(data|stringData)$
     azure_keyvault: https://drupalcsi-test-kv.vault.azure.net/keys/sops-key/b72464710327417e8acce41161e21eb9
