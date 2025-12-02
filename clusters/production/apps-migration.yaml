@@ -15,7 +15,7 @@ spec:
   prune: false  # Don't prune - Jobs are one-shot
   wait: true
   dependsOn:
-    - name: infrastructure
+    - name: certificates
   decryption:
     provider: sops
     secretRef:
