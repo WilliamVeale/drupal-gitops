@@ -47,7 +47,7 @@ spec:
   entryPoints:
     - websecure
   routes:
-    - match: Host(`drupal.example.com`)
+    - match: Host(`libutk.com`) || Host(`www.libutk.com`)
       kind: Rule
       middlewares:
         - name: security-headers
@@ -70,7 +70,7 @@ spec:
   entryPoints:
     - web
   routes:
-    - match: Host(`drupal.example.com`)
+    - match: Host(`libutk.com`) || Host(`www.libutk.com`)
       kind: Rule
       middlewares:
         - name: redirect-https

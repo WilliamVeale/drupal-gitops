@@ -31,8 +31,11 @@ spec:
   values:
     service:
       type: LoadBalancer
+      spec:
+        loadBalancerIP: "172.171.194.237"
       annotations:
         service.beta.kubernetes.io/azure-load-balancer-health-probe-request-path: /ping
+        service.beta.kubernetes.io/azure-load-balancer-resource-group: MC_drupalcsi-test-rg_drupalcsi-test-aks_eastus
 
     ports:
       web:

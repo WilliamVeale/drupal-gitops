@@ -30,7 +30,7 @@ spec:
 
           containers:
             - name: drupal-cron
-              image: myacr.azurecr.io/drupal:v1.0.0 # {"$imagepolicy": "flux-system:drupal"}
+              image: drupalcsitestacr.azurecr.io/drupal:v1.0.0 # {"$imagepolicy": "flux-system:drupal"}
 
               resources:
                 requests:
