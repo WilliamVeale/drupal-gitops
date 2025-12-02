@@ -1,0 +1,90 @@
+---
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: security-headers
+  namespace: drupal
+spec:
+  headers:
+    stsSeconds: 63072000
+    stsIncludeSubdomains: true
+    stsPreload: true
+    forceSTSHeader: true
+    frameDeny: true
+    contentTypeNosniff: true
+    browserXssFilter: true
+    referrerPolicy: "strict-origin-when-cross-origin"
+    customResponseHeaders:
+      X-Robots-Tag: "noindex, nofollow"  # Remove after go-live
+---
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: rate-limit
+  namespace: drupal
+spec:
+  rateLimit:
+    average: 100
+    burst: 200
+    period: 1m
+---
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: compress
+  namespace: drupal
+spec:
+  compress: {}
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: drupal-https
+  namespace: drupal
+  annotations:
+    kubernetes.io/ingress.class: traefik
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`drupal.example.com`)
+      kind: Rule
+      middlewares:
+        - name: security-headers
+        - name: rate-limit
+        - name: compress
+      services:
+        - name: drupal
+          port: 80
+          passHostHeader: true
+  tls:
+    secretName: drupal-tls-secret
+---
+# HTTP to HTTPS redirect
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: drupal-http-redirect
+  namespace: drupal
+spec:
+  entryPoints:
+    - web
+  routes:
+    - match: Host(`drupal.example.com`)
+      kind: Rule
+      middlewares:
+        - name: redirect-https
+          namespace: drupal
+      services:
+        - name: drupal
+          port: 80
+---
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: redirect-https
+  namespace: drupal
+spec:
+  redirectScheme:
+    scheme: https
+    permanent: true

@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: drupal-files-pvc
+  namespace: drupal
+  labels:
+    app.kubernetes.io/name: drupal
+    app.kubernetes.io/component: storage
+  annotations:
+    description: "Public file storage for Drupal (user uploads, generated images)"
+spec:
+  accessModes:
+    - ReadWriteMany     # Required for multiple pods to write simultaneously
+  storageClassName: azure-blob-nfs-drupal
+  resources:
+    requests:
+      storage: 100Gi    # Azure Blob is essentially unlimited; this is nominal

@@ -1,0 +1,19 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: drupal
+
+resources:
+  - namespace.yaml
+  - pvc.yaml
+  - migration-job.yaml
+  - deployment.yaml
+  - service.yaml
+  - configmap.yaml
+  - cronjob.yaml
+  - ingressroute.yaml
+
+commonLabels:
+  app.kubernetes.io/name: drupal
+  app.kubernetes.io/version: "11.0"
+  app.kubernetes.io/managed-by: flux

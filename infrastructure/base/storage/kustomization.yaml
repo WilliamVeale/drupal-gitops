@@ -1,0 +1,9 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - azure-blob-nfs-storageclass.yaml
+
+commonLabels:
+  app.kubernetes.io/component: storage
+  app.kubernetes.io/managed-by: flux

@@ -1,0 +1,3 @@
+creation_rules:
+  - path_regex: .*secrets\.yaml$
+    azure_keyvault: https://your-keyvault.vault.azure.net/keys/sops-key/your-key-version

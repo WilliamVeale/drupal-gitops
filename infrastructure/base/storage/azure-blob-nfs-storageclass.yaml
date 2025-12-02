@@ -1,0 +1,47 @@
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: azure-blob-nfs-drupal
+  labels:
+    app.kubernetes.io/name: drupal
+    app.kubernetes.io/component: storage
+  annotations:
+    description: "NFS-mounted Azure Blob Storage optimized for Drupal file operations"
+provisioner: blob.csi.azure.com
+parameters:
+  # NFS v3 protocol - required for POSIX filesystem semantics
+  protocol: nfs
+
+  # Premium tier is MANDATORY for NFS access with ReadWriteMany
+  # Standard tier does NOT support NFS
+  skuName: Premium_LRS
+
+# =============================================================================
+# MOUNT OPTIONS - Critical for Drupal Performance
+# =============================================================================
+# These options address the "chatty protocol" problem. Without them, Drupal's
+# thousands of stat() calls per request create unacceptable latency.
+# =============================================================================
+mountOptions:
+  # CONCURRENCY: Use 8 parallel TCP connections for better throughput
+  - nconnect=8
+
+  # METADATA CACHING: Cache file attributes for 60 seconds
+  # This is the critical performance fix - kernel remembers stat() results
+  - actimeo=60
+
+  # ACCESS TIME: Disable atime updates (turns reads into read+writes otherwise)
+  - noatime
+
+  # BUFFER SIZES: 1MB buffers for larger transfers
+  - rsize=1048576
+  - wsize=1048576
+
+  # RELIABILITY: Retry on connection loss
+  - hard
+  - timeo=600
+  - retrans=2
+
+reclaimPolicy: Retain
+volumeBindingMode: Immediate
+allowVolumeExpansion: true

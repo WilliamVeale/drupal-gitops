@@ -1,0 +1,27 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: drupal-env
+  namespace: drupal
+data:
+  # Application
+  DRUPAL_DOMAIN: "drupal.example.com"
+  DRUPAL_ENVIRONMENT: "production"
+
+  # Azure Database for MySQL
+  AZURE_MYSQL_HOST: "yourserver.mysql.database.azure.com"
+  AZURE_MYSQL_DATABASE: "drupal11"
+  AZURE_MYSQL_USERNAME: "drupaladmin"
+
+  # Azure Cache for Redis
+  AZURE_REDIS_HOST: "yourredis.redis.cache.windows.net"
+  AZURE_REDIS_PORT: "6380"
+  DRUPAL_CACHE_PREFIX: "drupal11_prod_"
+
+  # NOTE: No AZURE_STORAGE_* variables needed!
+  # Storage is mounted via CSI driver at infrastructure level.
+
+  # External Solr
+  SOLR_HOST: "solr.example.com"
+  SOLR_PORT: "8983"
+  SOLR_CORE: "drupal"

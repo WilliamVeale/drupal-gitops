@@ -1,0 +1,147 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: drupal
+  namespace: drupal
+  labels:
+    app: drupal
+    component: web
+spec:
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: drupal
+      component: web
+  template:
+    metadata:
+      labels:
+        app: drupal
+        component: web
+    spec:
+      # Spread pods across nodes for high availability
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app
+                      operator: In
+                      values: [drupal]
+                topologyKey: kubernetes.io/hostname
+
+      # CRITICAL: Alpine Linux uses UID 82 for www-data (not 33 like Debian)
+      securityContext:
+        runAsUser: 82
+        runAsGroup: 82
+        fsGroup: 82
+
+      # NO initContainers - migrations run as separate Job
+
+      containers:
+        - name: drupal
+          image: myacr.azurecr.io/drupal:v1.0.0 # {"$imagepolicy": "flux-system:drupal"}
+          imagePullPolicy: Always
+
+          # Resource allocation for Standard_D4s_v3 nodes (4 vCPU, 16GB RAM)
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "512Mi"
+            limits:
+              cpu: "2000m"
+              memory: "2Gi"
+
+          envFrom:
+            - secretRef:
+                name: drupal-secrets
+            - configMapRef:
+                name: drupal-env
+
+          # Deployment identifier for cache busting
+          env:
+            - name: DRUPAL_DEPLOYMENT_ID
+              value: "v1.0.0"  # Updated by FluxCD image automation
+
+          ports:
+            - containerPort: 80
+              name: http
+              protocol: TCP
+
+          # Startup probe - allows slow initial cache warming
+          startupProbe:
+            httpGet:
+              path: /health
+              port: 80
+              httpHeaders:
+                - name: Host
+                  value: localhost
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 30  # 5 minutes to start
+
+          # Liveness probe - restart if unresponsive
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 80
+              httpHeaders:
+                - name: Host
+                  value: localhost
+            initialDelaySeconds: 0
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 3
+
+          # Readiness probe - remove from service if unhealthy
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 80
+              httpHeaders:
+                - name: Host
+                  value: localhost
+            initialDelaySeconds: 0
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+
+          volumeMounts:
+            # PUBLIC FILES - Azure Blob NFS with kernel-level caching
+            - name: drupal-files
+              mountPath: /var/www/html/web/sites/default/files
+
+            # PRIVATE FILES - ephemeral (or use separate PVC if persistence needed)
+            - name: drupal-private
+              mountPath: /var/www/private
+
+            # EPHEMERAL - RAM-backed for Twig cache and temp files
+            - name: tmp
+              mountPath: /tmp
+
+      volumes:
+        # PERSISTENT: Azure Blob Storage via NFS
+        # Uses StorageClass with actimeo=60 for metadata caching
+        - name: drupal-files
+          persistentVolumeClaim:
+            claimName: drupal-files-pvc
+
+        # EPHEMERAL: Private files
+        - name: drupal-private
+          emptyDir: {}
+
+        # EPHEMERAL: RAM-backed temp storage for Twig cache
+        - name: tmp
+          emptyDir:
+            medium: Memory
+            sizeLimit: 1Gi
+
+      # Graceful shutdown - allow Drupal to finish requests
+      terminationGracePeriodSeconds: 60

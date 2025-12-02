@@ -1,0 +1,53 @@
+---
+apiVersion: image.toolkit.fluxcd.io/v1beta2
+kind: ImageRepository
+metadata:
+  name: drupal
+  namespace: flux-system
+spec:
+  image: myacr.azurecr.io/drupal
+  interval: 5m
+  secretRef:
+    name: acr-credentials
+---
+apiVersion: image.toolkit.fluxcd.io/v1beta2
+kind: ImagePolicy
+metadata:
+  name: drupal
+  namespace: flux-system
+spec:
+  imageRepositoryRef:
+    name: drupal
+  policy:
+    semver:
+      range: ">=1.0.0"
+---
+apiVersion: image.toolkit.fluxcd.io/v1beta2
+kind: ImageUpdateAutomation
+metadata:
+  name: drupal-automation
+  namespace: flux-system
+spec:
+  interval: 10m
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  git:
+    checkout:
+      ref:
+        branch: main
+    commit:
+      author:
+        email: fluxcd@example.com
+        name: FluxCD
+      messageTemplate: |
+        Automated image update
+
+        {{ range .Changed.Changes }}
+        - {{ .OldValue }} -> {{ .NewValue }}
+        {{ end }}
+    push:
+      branch: main
+  update:
+    path: ./apps
+    strategy: Setters

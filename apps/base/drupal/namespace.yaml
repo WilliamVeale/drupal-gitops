@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: drupal
+  labels:
+    app.kubernetes.io/name: drupal
+    app.kubernetes.io/part-of: drupal

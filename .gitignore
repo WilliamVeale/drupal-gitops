@@ -1,0 +1,17 @@
+# Encrypted files should be committed, but not the original secrets
+apps/production/secrets.yaml.dec
+*.dec
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Flux local files
+.flux/

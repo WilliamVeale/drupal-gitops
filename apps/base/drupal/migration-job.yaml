@@ -1,0 +1,69 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: drupal-migration
+  namespace: drupal
+  labels:
+    app: drupal
+    component: migration
+  annotations:
+    # Force recreation when image changes
+    fluxcd.io/automated: "true"
+spec:
+  # Don't retry failed migrations automatically - requires human review
+  backoffLimit: 0
+  activeDeadlineSeconds: 600
+  ttlSecondsAfterFinished: 3600
+  template:
+    metadata:
+      labels:
+        app: drupal
+        component: migration
+    spec:
+      restartPolicy: Never
+
+      securityContext:
+        runAsUser: 82      # Alpine www-data UID
+        runAsGroup: 82
+        fsGroup: 82
+
+      containers:
+        - name: drupal-migrate
+          image: myacr.azurecr.io/drupal:v1.0.0 # {"$imagepolicy": "flux-system:drupal"}
+
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "512Mi"
+            limits:
+              cpu: "2000m"
+              memory: "2Gi"
+
+          command:
+            - /bin/sh
+            - -exc
+            - |
+              cd /var/www/html
+
+              echo "=== Waiting for database connection ==="
+              until ./vendor/bin/drush sql:query "SELECT 1" 2>/dev/null; do
+                echo "Database not ready, waiting..."
+                sleep 5
+              done
+
+              echo "=== Running database updates ==="
+              ./vendor/bin/drush updatedb --yes --no-interaction
+
+              echo "=== Importing configuration ==="
+              ./vendor/bin/drush config:import --yes --no-interaction || true
+
+              echo "=== Rebuilding caches ==="
+              ./vendor/bin/drush cache:rebuild
+
+              echo "=== Migration complete ==="
+
+          envFrom:
+            - secretRef:
+                name: drupal-secrets
+            - configMapRef:
+                name: drupal-env
