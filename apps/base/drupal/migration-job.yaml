@@ -29,7 +29,7 @@ spec:
 
       containers:
         - name: drupal-migrate
-          image: drupalcsitestacr.azurecr.io/drupal:v1.0.7 # {"$imagepolicy": "flux-system:drupal"}
+          image: drupalcsitestacr.azurecr.io/drupal:v1.0.8 # {"$imagepolicy": "flux-system:drupal"}
 
           resources:
             requests:

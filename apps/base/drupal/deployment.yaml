@@ -46,7 +46,7 @@ spec:
 
       containers:
         - name: drupal
-          image: drupalcsitestacr.azurecr.io/drupal:v1.0.7 # {"$imagepolicy": "flux-system:drupal"}
+          image: drupalcsitestacr.azurecr.io/drupal:v1.0.8 # {"$imagepolicy": "flux-system:drupal"}
           imagePullPolicy: Always
 
           # Resource allocation for Standard_D4s_v3 nodes (4 vCPU, 16GB RAM)
@@ -70,7 +70,7 @@ spec:
               value: "v1.0.3"  # Updated by FluxCD image automation
 
           ports:
-            - containerPort: 80
+            - containerPort: 8080
               name: http
               protocol: TCP
 
@@ -78,7 +78,7 @@ spec:
           startupProbe:
             httpGet:
               path: /health
-              port: 80
+              port: 8080
               httpHeaders:
                 - name: Host
                   value: localhost
@@ -91,7 +91,7 @@ spec:
           livenessProbe:
             httpGet:
               path: /health
-              port: 80
+              port: 8080
               httpHeaders:
                 - name: Host
                   value: localhost
@@ -104,7 +104,7 @@ spec:
           readinessProbe:
             httpGet:
               path: /health
-              port: 80
+              port: 8080
               httpHeaders:
                 - name: Host
                   value: localhost
