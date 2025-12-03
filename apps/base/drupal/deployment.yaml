@@ -46,7 +46,7 @@ spec:
 
       containers:
         - name: drupal
-          image: drupalcsitestacr.azurecr.io/drupal:v1.0.4 # {"$imagepolicy": "flux-system:drupal"}
+          image: drupalcsitestacr.azurecr.io/drupal:v1.0.5 # {"$imagepolicy": "flux-system:drupal"}
           imagePullPolicy: Always
 
           # Resource allocation for Standard_D4s_v3 nodes (4 vCPU, 16GB RAM)
