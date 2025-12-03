@@ -46,7 +46,7 @@ spec:
 
       containers:
         - name: drupal
-          image: drupalcsitestacr.azurecr.io/drupal:v1.0.2 # {"$imagepolicy": "flux-system:drupal"}
+          image: drupalcsitestacr.azurecr.io/drupal:v1.0.3 # {"$imagepolicy": "flux-system:drupal"}
           imagePullPolicy: Always
 
           # Resource allocation for Standard_D4s_v3 nodes (4 vCPU, 16GB RAM)
@@ -67,7 +67,7 @@ spec:
           # Deployment identifier for cache busting
           env:
             - name: DRUPAL_DEPLOYMENT_ID
-              value: "v1.0.2"  # Updated by FluxCD image automation
+              value: "v1.0.3"  # Updated by FluxCD image automation
 
           ports:
             - containerPort: 80
